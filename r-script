@@ -1,0 +1,113 @@
+
+PRIVATE_ENROLLED<-data.frame()
+PRIVATE_ENROLLED<-read.csv("Y:\\Desktop\\info vis\\project\\private\\csv\\enrolled-new.csv",header=T,stringsAsFactors=F)
+PRIVATE_ENROLLED
+
+PRIVATE_FA<-data.frame()
+PRIVATE_FA<-read.csv("Y:\\Desktop\\info vis\\project\\private\\csv\\federal-aid.csv",header=T,stringsAsFactors=F)
+PRIVATE_FA
+
+
+##################################################################################
+
+
+PUBLIC_ENROLLED<-data.frame()
+PUBLIC_ENROLLED<-read.csv("Y:\\Desktop\\info vis\\project\\public\\csv\\enrolled-new.csv",header=T,stringsAsFactors=F)
+PUBLIC_ENROLLED
+
+PUBLIC_FA<-data.frame()
+PUBLIC_FA<-read.csv("Y:\\Desktop\\info vis\\project\\public\\csv\\federal-aid-new.csv",header=T,stringsAsFactors=F)
+PUBLIC_FA
+
+
+##############################################################################
+
+library(ggplot2)
+
+
+###private enrollment bar plot
+ggplot(PRIVATE_ENROLLED, aes(x=University, y=Total)) +
+  geom_bar(aes(fill=Year),position="dodge",stat="identity")+facet_wrap(~Year)
+
+###public enrollment bar plot
+ggplot(PUBLIC_ENROLLED, aes(x=University, y=Total)) +
+  geom_bar(aes(fill=Year),position="dodge",stat="identity")+facet_wrap(~Year)
+
+
+####privae federal aid pie
+
+private_fa<-ggplot(PRIVATE_FA,aes(x="",y=PRIVATE_FA$PFA,fill=PRIVATE_FA$University))+geom_bar(width=1,stat="identity")+coord_polar("y")
+private_fa
+
+###public federal aid pie
+
+public_fa<-ggplot(PUBLIC_FA,aes(x="",y=PUBLIC_FA$PFA,fill=PUBLIC_FA$University))+geom_bar(width=1,stat="identity")+coord_polar("y")
+public_fa
+
+###############################################################################3
+
+###Choropleth map on total federal aid in the states
+install.packages(c("ggplot2","ggmap","maptools"))
+install.packages("scales")
+install.packages("qdap")
+install.packages("scales")
+install.packages("ggthemes")
+
+library(ggplot2)
+library(ggmap)
+library(maptools)
+library(scales)
+library(qdap)
+library(ggthemes)
+
+USA<-read.csv("Y:\\Desktop\\info vis\\project\\usa.csv",header=T,stringsAsFactors=F)
+USA$State
+
+states_map<-map_data("state")
+
+# returns string w/o leading or trailing whitespace
+trim <- function (x) gsub("^\\s+|\\s+$", "", x)
+
+USA$State_trim<-trim(USA$State)
+
+ggplot(USA, aes(map_id = State_trim)) +
+  geom_map(aes(fill = USA$TFA), map = states_map, color ="black") +
+  expand_limits(x = states_map$long, y = states_map$lat) +
+  theme_few()+
+  theme(legend.position = "bottom",
+        axis.ticks = element_blank(), 
+        axis.title = element_blank(), 
+        axis.text =  element_blank()) +
+  scale_fill_gradient(low="white", high="skyblue") +
+  guides(fill = guide_colorbar(barwidth = 10, barheight = .5)) + 
+  ggtitle("Federal aid by state")
+
+##############################################################################
+
+
+###line plot of private total funding in 2012,2011
+ggplot(data=PRIVATE_TFA, aes(x=University, y=TFA,group=Year,color=Year)) +
+  geom_line(size=2) +
+  geom_point(size=3)
+
+
+
+
+###line plot of pubilc total funding in 2012,2011
+
+ggplot(data=PUBLIC_TFA, aes(x=University, y=TFA,group=Year,color=Year)) +
+  geom_line(size=2) +
+  geom_point(size=3)
+
+DF<-data.frame(PRIVATE_TFA$University,PRIVATE_TFA$Year,PRIVATE_TFA$TFA,PUBLIC_TFA$Year,PUBLIC_TFA$TFA)
+DF
+
+#############################################################################
+
+###total endowment for top 20 universities
+
+END<-read.csv("Y:\\Desktop\\info vis\\project\\end.csv",header=T,stringsAsFactors=F)
+END
+
+ggplot(END, aes(x=University, y=TE, size=TE, label=University),guide=FALSE)+
+  geom_point(colour="white", fill="red", shape=21)+ scale_size_area(max_size = 15)
